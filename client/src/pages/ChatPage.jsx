@@ -1,41 +1,66 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SectionWrapper from "../components/SectionWrapper";
 import ChatBubble from "../components/ChatBubble";
+import Spinner from "../components/Spinner";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [transcriptLoaded, setTranscriptLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadTranscript = async () => {
+      try {
+        const res = await fetch("/meeting_summaries/meeting1.txt");
+        const fileText = await res.text();
+        setTimeout(() => {
+          setTranscript(fileText);
+          setTranscriptLoaded(true);
+        }, 10000); // ⏱️ 7-second delay
+      } catch (err) {
+        console.error("Failed to load transcript", err);
+      }
+    };
+
+    loadTranscript();
+  }, []);
+
   const handleSend = async () => {
     if (input.trim() === "") return;
-  
+
     const newUserMsg = { sender: "User", text: input };
-    setMessages([...messages, newUserMsg]);
+    setMessages((prev) => [...prev, newUserMsg]);
     setInput("");
     setLoading(true);
-  
+
     try {
+      const prompt = `
+Use the following meeting transcript strictly as background context:
+
+-----
+${transcript}
+-----
+
+Answer the following question naturally and concisely without referring to the transcript itself:
+
+"${input}"
+`;
+
       const response = await fetch("http://localhost:11434/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "llama3",
-          prompt: input,
+          prompt,
           stream: false,
         }),
       });
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Ollama error:", errorText);
-        throw new Error("Non-200 response");
-      }
-  
+
       const data = await response.json();
-      console.log("Ollama response:", data);
-  
       const aiMsg = {
-        sender: "AI",
+        sender: "Nexora",
         text: data.response?.trim() || "⚠️ No response received.",
       };
       setMessages((prev) => [...prev, aiMsg]);
@@ -43,28 +68,33 @@ export default function ChatPage() {
       console.error("Fetch error:", error);
       setMessages((prev) => [
         ...prev,
-        { sender: "AI", text: "Something went wrong. Is Ollama running?" },
+        { sender: "Nexora", text: "Something went wrong. Is Ollama running?" },
       ]);
     } finally {
       setLoading(false);
     }
   };
-  
+
+  if (!transcriptLoaded) return <Spinner />;
 
   return (
     <SectionWrapper>
-      <h2 className="text-3xl font-bold text-white mb-6">Chat with Your AI</h2>
+      <h2 className="text-3xl font-bold text-white mb-6">
+        Ask About the Meeting
+      </h2>
 
-      <div className="bg-white/5 p-6 rounded-xl text-gray-300 flex flex-col space-y-3 mb-6 max-h-[60vh] overflow-y-auto">
+      <div className="bg-white/5 p-6 rounded-xl text-gray-300 flex flex-col space-y-3 mb-6 max-h-[50vh] overflow-y-auto">
         {messages.map((msg, index) => (
           <ChatBubble key={index} sender={msg.sender} text={msg.text} />
         ))}
         {loading && (
-          <div className="text-sm text-blue-400 animate-pulse">AI is typing...</div>
+          <div className="text-sm text-blue-400 animate-pulse">
+            Nexora is typing...
+          </div>
         )}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-center gap-4">
         <input
           type="text"
           placeholder="Ask something..."
