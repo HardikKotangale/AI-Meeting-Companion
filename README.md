@@ -1,5 +1,22 @@
 
 # AI Meeting Companion
+## 🚀 Commands to Run the React Code
+
+### 1. 📦 Install Vite as a Dev Dependency
+```bash
+npm install -D vite
+```
+
+### 2. 📦 Install Required Dependencies
+```bash
+npm install react react-dom
+npm install react-chartjs-2 chart.js lucide-react
+```
+
+### 3. ▶️ Start the Development Server
+```bash
+npm run dev
+```
 
 ## Project Structure
 
