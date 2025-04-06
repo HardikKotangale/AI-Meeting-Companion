@@ -3,34 +3,67 @@ import SectionWrapper from "../components/SectionWrapper";
 import ChatBubble from "../components/ChatBubble";
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState([
-    { sender: "User", text: "What were the key decisions in this meeting?" },
-    { sender: "AI", text: "The key decisions were to focus on mobile onboarding improvements and allocate Q2 budget toward retention campaigns." },
-    { sender: "User", text: "Who is responsible for the onboarding audit?" },
-    { sender: "AI", text: "Claire is assigned to prepare the onboarding UX audit report by April 10." },
-  ]);
-
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-
-  const handleSend = () => {
+  const [loading, setLoading] = useState(false);
+  const handleSend = async () => {
     if (input.trim() === "") return;
+  
     const newUserMsg = { sender: "User", text: input };
-    const fakeReply = {
-      sender: "AI",
-      text: "This is a simulated AI response to your question."
-    };
-    setMessages([...messages, newUserMsg, fakeReply]);
+    setMessages([...messages, newUserMsg]);
     setInput("");
+    setLoading(true);
+  
+    try {
+      const response = await fetch("http://localhost:11434/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama3",
+          prompt: input,
+          stream: false,
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Ollama error:", errorText);
+        throw new Error("Non-200 response");
+      }
+  
+      const data = await response.json();
+      console.log("Ollama response:", data);
+  
+      const aiMsg = {
+        sender: "AI",
+        text: data.response?.trim() || "⚠️ No response received.",
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (error) {
+      console.error("Fetch error:", error);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "AI", text: "Something went wrong. Is Ollama running?" },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
+  
 
   return (
     <SectionWrapper>
       <h2 className="text-3xl font-bold text-white mb-6">Chat with Your AI</h2>
-      <div className="bg-white/5 p-6 rounded-xl text-gray-300 flex flex-col space-y-3 mb-6">
+
+      <div className="bg-white/5 p-6 rounded-xl text-gray-300 flex flex-col space-y-3 mb-6 max-h-[60vh] overflow-y-auto">
         {messages.map((msg, index) => (
           <ChatBubble key={index} sender={msg.sender} text={msg.text} />
         ))}
+        {loading && (
+          <div className="text-sm text-blue-400 animate-pulse">AI is typing...</div>
+        )}
       </div>
+
       <div className="flex items-center gap-4">
         <input
           type="text"
@@ -42,7 +75,8 @@ export default function ChatPage() {
         />
         <button
           onClick={handleSend}
-          className="px-5 py-2 bg-blue-600 rounded-lg hover:bg-blue-500 text-sm font-medium text-white"
+          className="px-5 py-2 bg-blue-600 rounded-lg hover:bg-blue-500 text-sm font-medium text-white disabled:opacity-50"
+          disabled={loading}
         >
           Send
         </button>

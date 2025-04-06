@@ -1,17 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import SectionWrapper from "../components/SectionWrapper";
 
 export default function UploadPage({ onUpload }) {
   const [uploading, setUploading] = useState(false);
   const [done, setDone] = useState(false);
+  const navigate = useNavigate();
 
   const handleFakeUpload = () => {
     setUploading(true);
     setTimeout(() => {
       setUploading(false);
       setDone(true);
-      setTimeout(() => onUpload(), 1000);
+      onUpload(); // set parent state
+      setTimeout(() => {
+        navigate("/transcript"); // redirect after short delay
+      }, 1000);
     }, 3000);
   };
 
@@ -21,15 +26,16 @@ export default function UploadPage({ onUpload }) {
         Upload Your Meeting
       </h2>
       <p className="text-gray-400 max-w-xl mb-6">
-        Upload audio or video files to transcribe, analyze, and summarize with our AI companion.
+        Upload your video file to transcribe, analyze, and summarize with our AI companion.
       </p>
+
       {!uploading && !done && (
         <motion.div
           onClick={handleFakeUpload}
           whileHover={{ scale: 1.05 }}
           className="cursor-pointer border border-dashed border-gray-500 p-6 rounded-2xl bg-white/5 hover:bg-white/10 transition text-gray-300"
         >
-          🎙️ Click here to simulate upload of <strong>team-meeting.mp3</strong>
+          🎙️ Click here to simulate upload of <strong></strong>
         </motion.div>
       )}
 
