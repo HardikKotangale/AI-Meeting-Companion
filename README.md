@@ -1,74 +1,127 @@
+# Nexora: AI-Powered Meeting Companion
 
-# AI Meeting Companion
-## 🚀 Commands to Run the React Code
+Nexora is an intelligent meeting assistant that transcribes audio, summarizes key discussion points, extracts actionable items, and enables users to chat with an AI agent about any part of the meeting.
 
-### 1. 📦 Install Vite as a Dev Dependency
-```bash
-npm install -D vite
+✨ Built with privacy-first principles, local LLM integration, and a sleek modern UI.
+
+---
+
+## 🚀 Features
+
+### 🎤 Transcription
+- Upload or stream meeting audio
+- Transcripts loaded from `.txt` files (`public/meeting_summaries/meeting1.txt`)
+- Auto-refreshing UI with download support
+
+### 🧠 AI-Powered Summarization
+- Local LLM (`llama3` via [Ollama](https://ollama.com)) summarizes the meeting transcript
+- Outputs:
+  - Detailed Summary
+  - Action Item Checklist (task, owner, due date, status)
+
+### 💬 Chat with Nexora
+- Natural language QA over the transcript
+- Type or ask any follow-up question about the meeting
+- Nexora responds concisely using the meeting as context
+
+### 🌐 Tech Stack
+
+| Frontend            | Backend             | AI / Infra        |
+|---------------------|---------------------|-------------------|
+| React + Vite        | Flask               | Ollama + LLaMA3   |
+| Tailwind CSS        | RESTful API         | Whisper (transcribe) |
+| Framer Motion       | Google Cloud Storage| Python + OpenCV   |
+
+---
+
+## 📁 Folder Structure
+
+```
+nexora/
+├── client/                 # React frontend
+│   ├── components/         # Shared UI (SectionWrapper, Spinner, ChatBubble)
+│   ├── pages/              # TranscriptPage, SummaryPage, ChatPage
+│   └── public/meeting_summaries/meeting1.txt
+├── server/                 # Flask backend
+│   ├── routes/             # APIs for transcription, summarization, upload
+│   ├── utils/              # Helper functions
+│   └── models/             # Whisper, Chat, Summary models
 ```
 
-### 2. 📦 Install Required Dependencies
+---
+
+## 📦 Installation
+
+### 🔧 1. Clone and Setup
+
 ```bash
-npm install react react-dom
-npm install react-chartjs-2 chart.js lucide-react
+git clone https://github.com/your-username/nexora.git
+cd nexora
 ```
 
-### 3. ▶️ Start the Development Server
+### 📦 2. Frontend Setup
+
 ```bash
+cd client
+npm install
 npm run dev
 ```
 
-## Project Structure
+### 🔌 3. Backend Setup
+
+```bash
+cd server
+pip install -r requirements.txt
+python run.py
+```
+
+### 🧠 4. Run Ollama Locally
+
+```bash
+ollama run llama3
+```
+
+> Make sure Ollama is running on `http://localhost:11434`
+
+---
+
+## 🗃️ Transcripts
+
+You can place `.txt` transcripts in:
 
 ```
-ai-meeting-companion/
-├── client/                   # React Frontend
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── AudioUploader.jsx         # Upload audio files
-│   │   │   ├── LiveTranscription.jsx     # Show real-time transcription
-│   │   │   ├── SummaryPanel.jsx          # Display summaries and TL;DRs
-│   │   │   ├── ActionItems.jsx           # Show parsed action items
-│   │   │   └── SentimentChart.jsx        # Visualize tone/emotion
-│   │   ├── pages/
-│   │   │   └── Dashboard.jsx             # Main dashboard view
-│   │   ├── services/
-│   │   │   └── api.js                    # Axios calls to Flask API
-│   │   ├── utils/
-│   │   │   └── formatTimestamp.js
-│   │   ├── App.jsx
-│   │   └── index.js
-│   └── package.json
-│
-├── server/                   # Flask Backend
-│   ├── api/
-│   │   ├── routes/
-│   │   │   ├── upload.py                # Endpoint to upload audio
-│   │   │   ├── transcribe.py            # Handles transcription logic
-│   │   │   ├── summarize.py             # Summarizes transcripts
-│   │   │   ├── action_items.py          # Extracts tasks, owners, deadlines
-│   │   │   └── sentiment.py             # Analyzes tone/emotion
-│   │   ├── services/
-│   │   │   ├── transcription_service.py
-│   │   │   ├── summarization_service.py
-│   │   │   ├── action_item_service.py
-│   │   │   └── sentiment_service.py
-│   │   ├── models/
-│   │   │   ├── meeting.py
-│   │   │   ├── transcript.py
-│   │   │   ├── action_item.py
-│   │   │   └── sentiment.py
-│   │   └── utils/
-│   │       └── helpers.py
-│   ├── config/
-│   │   ├── database.py
-│   │   └── settings.py
-│   ├── app.py
-│   └── requirements.txt
-│
-├── migrations/               # Flask-Migrate / Alembic DB migrations
-├── .env                      # Environment variables (API keys, DB URI)
-├── README.md
-└── docker-compose.yml        # Optional: manage Postgres + Flask + React together
+client/public/meeting_summaries/
 ```
+
+Example:
+```
+meeting1.txt
+meeting2.txt
+```
+
+---
+
+## 🛠 Dev Tips
+
+- Adjust loading behavior in each component via `setTimeout` or real async events
+- Transcript auto-refresh can be toggled via store (Zustand)
+- Chat UI supports Enter to send, animated AI typing, and download
+
+---
+
+## 📦 Deployment
+
+- Use `Vercel`, `Netlify`, or `GCP App Engine` for frontend
+- Deploy Flask backend on `GCP Cloud Run` or `Render`
+- Run Ollama locally or containerize it using Docker (advanced)
+
+---
+
+## 🔒 Privacy & Local-first AI
+
+Nexora is designed to be privacy-friendly:
+- Whisper and LLaMA run **locally**
+- Your transcripts never leave your machine
+- No third-party cloud dependencies unless explicitly configured
+
+---
